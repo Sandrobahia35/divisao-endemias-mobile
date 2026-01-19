@@ -53,8 +53,12 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             {/* Foto do usuário */}
-                            <div className="w-14 h-14 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center shadow-lg">
-                                <span className="material-symbols-outlined text-3xl text-white">person</span>
+                            <div className="w-14 h-14 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center shadow-lg overflow-hidden">
+                                {profile?.avatar_url ? (
+                                    <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="material-symbols-outlined text-3xl text-white">person</span>
+                                )}
                             </div>
                             <div>
                                 <p className="text-sm text-white/80 font-medium">{getCurrentGreeting()}!</p>
