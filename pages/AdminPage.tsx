@@ -49,6 +49,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBack }) => {
         ultimaSemana: null as string | null,
         localidadeMaisFrequente: null as string | null
     });
+    const [selectedWeek, setSelectedWeek] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -91,15 +92,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBack }) => {
 
     const userStats = UserService.getStats();
 
-    const handleClearAllData = () => {
-        if (window.confirm('⚠️ ATENÇÃO: Isso irá APAGAR TODOS os relatórios. Esta ação não pode ser desfeita. Continuar?')) {
-            if (window.confirm('Tem CERTEZA ABSOLUTA? Todos os dados serão perdidos permanentemente.')) {
-                localStorage.removeItem('sivep_reports');
-                setReports([]);
-                window.location.reload();
-            }
-        }
-    };
+
 
     const handleExportData = () => {
         const data = JSON.stringify(reports, null, 2);
@@ -439,15 +432,25 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBack }) => {
                             <div className="bg-slate-50 dark:bg-slate-800/50 px-4 py-2 border-b border-slate-100 dark:border-slate-800">
                                 <h3 className="text-xs font-bold text-slate-500 uppercase">Semanas com Dados</h3>
                             </div>
-                            <div className="p-4 flex flex-wrap gap-2">
+                            <div className="p-4">
                                 {filterOptions.semanas.length === 0 ? (
                                     <p className="text-sm text-slate-400">Nenhuma semana registrada</p>
                                 ) : (
-                                    filterOptions.semanas.map(se => (
-                                        <span key={se} className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs font-bold">
-                                            {se}
-                                        </span>
-                                    ))
+                                    <div className="relative">
+                                        <select
+                                            value={selectedWeek}
+                                            onChange={(e) => setSelectedWeek(e.target.value)}
+                                            className="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all font-medium text-sm cursor-pointer"
+                                        >
+                                            <option value="">Visualizar todas as semanas ({filterOptions.semanas.length})</option>
+                                            {filterOptions.semanas.map(se => (
+                                                <option key={se} value={se}>{se}</option>
+                                            ))}
+                                        </select>
+                                        <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-500">
+                                            <span className="material-symbols-outlined">expand_more</span>
+                                        </div>
+                                    </div>
                                 )}
                             </div>
                         </section>
@@ -604,23 +607,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBack }) => {
                             </button>
                         </section>
 
-                        {/* Zona de Perigo */}
-                        <section className="bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800/50 p-4">
-                            <div className="flex items-center gap-2 mb-3">
-                                <span className="material-symbols-outlined text-red-500">warning</span>
-                                <h3 className="text-sm font-bold text-red-700 dark:text-red-400">Zona de Perigo</h3>
-                            </div>
-                            <p className="text-xs text-red-600/70 dark:text-red-400/70 mb-4">
-                                Ações irreversíveis. Tenha certeza antes de prosseguir.
-                            </p>
-                            <button
-                                onClick={handleClearAllData}
-                                className="w-full py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2"
-                            >
-                                <span className="material-symbols-outlined">delete_forever</span>
-                                Apagar Todos os Dados
-                            </button>
-                        </section>
+
                     </>
                 )}
 
