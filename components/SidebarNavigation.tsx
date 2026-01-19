@@ -101,8 +101,12 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
             {/* Footer / User Info */}
             <div className="p-4 border-t border-slate-200 dark:border-slate-800">
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center text-white">
-                        <span className="material-symbols-outlined">person</span>
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center text-white overflow-hidden border-2 border-white dark:border-slate-700">
+                        {profile?.avatar_url ? (
+                            <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                        ) : (
+                            <span className="material-symbols-outlined">person</span>
+                        )}
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold text-slate-800 dark:text-white truncate">

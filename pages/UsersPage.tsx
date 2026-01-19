@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { ProfileService } from '../services/profileService';
 
 interface UsersPageProps {
     isDarkMode: boolean;
@@ -9,6 +10,8 @@ interface UsersPageProps {
 export const UsersPage: React.FC<UsersPageProps> = ({ isDarkMode, onToggleDarkMode }) => {
     const { user, profile, signOut } = useAuth();
     const [isSigningOut, setIsSigningOut] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     const displayName = profile?.full_name || user?.email?.split('@')[0] || 'Usuário';
     const displayRole = profile?.role === 'admin' ? 'Administrador' : 'Agente de Campo';
@@ -26,6 +29,38 @@ export const UsersPage: React.FC<UsersPageProps> = ({ isDarkMode, onToggleDarkMo
         }
     };
 
+    const handleAvatarClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file || !user) return;
+
+        if (!file.type.startsWith('image/')) {
+            alert('Por favor, selecione uma imagem válida.');
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) { // 5MB
+            alert('A imagem deve ter no máximo 5MB.');
+            return;
+        }
+
+        setIsUploading(true);
+        try {
+            await ProfileService.uploadAvatar(user.id, file);
+            // Recarregar a página para atualizar o contexto
+            alert('Foto de perfil atualizada com sucesso!');
+            window.location.reload();
+        } catch (error) {
+            console.error('Erro ao atualizar foto:', error);
+            alert('Erro ao atualizar foto de perfil.');
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     return (
         <div className="flex-1 flex flex-col min-h-screen bg-background-light dark:bg-background-dark">
             {/* Header */}
@@ -38,8 +73,34 @@ export const UsersPage: React.FC<UsersPageProps> = ({ isDarkMode, onToggleDarkMo
                 {/* Perfil do usuário */}
                 <section className="bg-white dark:bg-surface-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-5">
                     <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center text-white shadow-lg">
-                            <span className="material-symbols-outlined text-3xl">person</span>
+                        <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
+                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center text-white shadow-lg overflow-hidden border-2 border-white dark:border-slate-700">
+                                {profile?.avatar_url ? (
+                                    <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="material-symbols-outlined text-3xl">person</span>
+                                )}
+                            </div>
+
+                            {/* Overlay de Edição */}
+                            <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span className="material-symbols-outlined text-white text-lg">edit</span>
+                            </div>
+
+                            {/* Loading Overlay */}
+                            {isUploading && (
+                                <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center z-10 transition-opacity">
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                            )}
+
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                className="hidden"
+                                accept="image/*"
+                                onChange={handleFileChange}
+                            />
                         </div>
                         <div className="flex-1 min-w-0">
                             <h2 className="text-lg font-bold text-slate-900 dark:text-white truncate">
