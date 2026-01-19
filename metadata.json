@@ -1,0 +1,7 @@
+{
+  "name": "Divisao-Endemias Mobile",
+  "description": "Uma aplicação para registro de atividades de campo no controle de endemias, com fluxo multi-etapas para identificação, depósitos, larvicidas e recursos humanos.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
