@@ -66,12 +66,14 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                                 <p className="text-xs text-white/70 mt-0.5">Divisão de Endemias</p>
                             </div>
                         </div>
-                        <button
-                            onClick={() => onNavigate('admin')}
-                            className="w-11 h-11 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
-                        >
-                            <span className="material-symbols-outlined text-xl">settings</span>
-                        </button>
+                        {profile?.role === 'admin' && (
+                            <button
+                                onClick={() => onNavigate('admin')}
+                                className="w-11 h-11 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+                            >
+                                <span className="material-symbols-outlined text-xl">settings</span>
+                            </button>
+                        )}
                     </div>
                 </div>
             </header>

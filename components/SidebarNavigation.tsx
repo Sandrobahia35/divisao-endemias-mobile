@@ -84,18 +84,22 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                 {/* Divider */}
                 <div className="my-4 border-t border-slate-200 dark:border-slate-800" />
 
-                {/* Admin Link */}
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">Administração</p>
-                <button
-                    onClick={onOpenAdmin}
-                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
-                >
-                    <span className="material-symbols-outlined text-xl">settings</span>
-                    <div className="text-left">
-                        <p className="text-sm font-semibold">Painel Admin</p>
-                        <p className="text-[10px] text-slate-400">Gerenciar sistema</p>
-                    </div>
-                </button>
+                {/* Admin Link - Only for Admin role */}
+                {profile?.role === 'admin' && (
+                    <>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">Administração</p>
+                        <button
+                            onClick={onOpenAdmin}
+                            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
+                        >
+                            <span className="material-symbols-outlined text-xl">settings</span>
+                            <div className="text-left">
+                                <p className="text-sm font-semibold">Painel Admin</p>
+                                <p className="text-[10px] text-slate-400">Gerenciar sistema</p>
+                            </div>
+                        </button>
+                    </>
+                )}
             </nav>
 
             {/* Footer / User Info */}

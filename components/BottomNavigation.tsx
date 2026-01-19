@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 type PageType = 'home' | 'form' | 'reports' | 'users' | 'admin';
 
@@ -23,10 +24,19 @@ const navItems: NavItem[] = [
 ];
 
 export const BottomNavigation: React.FC<BottomNavigationProps> = ({ currentPage, onNavigate }) => {
+    const { profile } = useAuth();
+
+    const filteredNavItems = navItems.filter(item => {
+        if (item.id === 'admin') {
+            return profile?.role === 'admin';
+        }
+        return true;
+    });
+
     return (
         <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-surface-dark border-t border-slate-200 dark:border-slate-800 shadow-lg md:hidden">
             <div className="flex items-center justify-around h-16">
-                {navItems.map((item) => {
+                {filteredNavItems.map((item) => {
                     const isActive = currentPage === item.id;
                     const isNew = item.id === 'form';
 
