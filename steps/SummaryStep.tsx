@@ -258,7 +258,7 @@ const EditableStatItem = ({ icon, label, value, onChange, span = 1, disabled = f
   <div className={`bg-white dark:bg-surface-dark p-3 flex flex-col gap-2 ${span === 2 ? 'col-span-2' : ''} ${disabled ? 'opacity-50' : ''}`}>
     <div className="flex items-center gap-1.5">
       <span className="material-symbols-outlined text-slate-400 text-[16px]">{icon}</span>
-      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 truncate">{label}</span>
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">{label}</span>
       {disabled && <span className="text-[8px] bg-red-100 text-red-500 px-1.5 py-0.5 rounded-full font-bold">BLOQUEADO</span>}
     </div>
     <div className="relative">
@@ -288,7 +288,7 @@ const EditableStatusItem = ({ icon, label, value, onChange, iconColor, disabled 
   <div className={`bg-white dark:bg-surface-dark p-3 flex flex-col gap-2 ${disabled ? 'opacity-50' : ''}`}>
     <div className="flex items-center gap-1.5">
       <span className={`material-symbols-outlined ${iconColor} text-[18px]`}>{icon}</span>
-      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 truncate">{label}</span>
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">{label}</span>
       {disabled && <span className="text-[8px] bg-red-100 text-red-500 px-1.5 py-0.5 rounded-full font-bold">BLOQUEADO</span>}
     </div>
     <div className="relative">

@@ -20,13 +20,14 @@ import { SidebarNavigation } from './components/SidebarNavigation';
 import { ReportService } from './services/reportService';
 import { supabase } from './services/supabaseClient';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 
 const AuthenticatedApp: React.FC = () => {
   const { user, loading, isAdmin } = useAuth();
+  const { isDarkMode } = useTheme(); // Hook hook consuming theme context
   const [currentPage, setCurrentPage] = useState<PageType>('home');
   const [step, setStep] = useState<Step>(Step.Identification);
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [editingReportId, setEditingReportId] = useState<string | null>(null);
@@ -50,14 +51,6 @@ const AuthenticatedApp: React.FC = () => {
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
-
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDarkMode]);
 
   if (loading) {
     return (
@@ -284,7 +277,7 @@ const AuthenticatedApp: React.FC = () => {
       case 'reports':
         return <ReportsPage onNavigateToForm={() => handleNavigate('form')} onEditReport={handleEditReport} />;
       case 'users':
-        return <UsersPage />;
+        return <UsersPage />; // UsersPage now handles theme internally via Context
       case 'form':
         return (
           <div className="flex flex-col h-screen md:h-auto">
@@ -379,7 +372,9 @@ const AuthenticatedApp: React.FC = () => {
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <AuthenticatedApp />
+      <ThemeProvider>
+        <AuthenticatedApp />
+      </ThemeProvider>
     </AuthProvider>
   );
 };

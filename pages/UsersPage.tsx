@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { ProfileService } from '../services/profileService';
 
 interface UsersPageProps {
-    isDarkMode: boolean;
-    onToggleDarkMode: () => void;
+    // Removed props as we now use context
 }
 
-export const UsersPage: React.FC<UsersPageProps> = ({ isDarkMode, onToggleDarkMode }) => {
+export const UsersPage: React.FC<UsersPageProps> = () => {
     const { user, profile, signOut, getRoleLabel } = useAuth();
+    const { isDarkMode, toggleTheme } = useTheme();
     const [isSigningOut, setIsSigningOut] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -132,7 +133,7 @@ export const UsersPage: React.FC<UsersPageProps> = ({ isDarkMode, onToggleDarkMo
 
                     {/* Dark Mode Toggle */}
                     <button
-                        onClick={onToggleDarkMode}
+                        onClick={toggleTheme}
                         className="w-full flex items-center justify-between px-4 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800"
                     >
                         <div className="flex items-center gap-3">

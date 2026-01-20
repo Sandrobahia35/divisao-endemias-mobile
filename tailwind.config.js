@@ -17,6 +17,7 @@ export default {
             colors: {
                 "primary": "#0066cc",
                 "primary-dark": "#0052a3",
+                "primary-light": "#60a5fa", // Blue 400 for better contrast on dark bg
                 "background-light": "#f5f7f8",
                 "background-dark": "#0f1923",
                 "surface-light": "#ffffff",

@@ -179,14 +179,14 @@ export const IdentificationStep: React.FC<IdentificationStepProps> = ({ data, on
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-white dark:bg-surface-dark p-3 rounded-lg shadow-sm">
-              <p className="text-[10px] text-slate-400 font-bold uppercase">Total Imóveis</p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-300 font-bold uppercase">Total Imóveis</p>
               <p className="text-xl font-black text-slate-800 dark:text-white">
                 {(data.imoveis.residencias || 0) + (data.imoveis.comercios || 0) +
                   (data.imoveis.terrenos || 0) + (data.imoveis.pontos || 0) + (data.imoveis.outros || 0)}
               </p>
             </div>
             <div className="bg-white dark:bg-surface-dark p-3 rounded-lg shadow-sm">
-              <p className="text-[10px] text-slate-400 font-bold uppercase">Pendência</p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-300 font-bold uppercase">Pendência</p>
               <p className="text-xl font-black text-amber-600">
                 {(() => {
                   const total = (data.imoveis.residencias || 0) + (data.imoveis.comercios || 0) +
