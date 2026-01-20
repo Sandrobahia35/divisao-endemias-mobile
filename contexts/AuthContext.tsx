@@ -76,7 +76,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const signOut = async () => {
-        await supabase.auth.signOut();
+        try {
+            const { error } = await supabase.auth.signOut();
+            if (error) throw error;
+        } catch (error) {
+            console.error("Erro ao realizar logout:", error);
+        } finally {
+            // Força a limpeza do estado local mesmo se der erro no servidor (ex: 403)
+            setSession(null);
+            setUser(null);
+            setProfile(null);
+            localStorage.clear(); // Limpa dados locais para garantir
+        }
     };
 
     const isAdmin = profile?.role === 'admin';
