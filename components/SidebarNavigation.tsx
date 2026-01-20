@@ -28,7 +28,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
     onNavigate,
     onOpenAdmin
 }) => {
-    const { user, profile } = useAuth();
+    const { user, profile, getRoleLabel } = useAuth();
     const displayName = profile?.full_name || user?.email?.split('@')[0] || 'Usuário';
 
     return (
@@ -116,7 +116,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                         <p className="text-sm font-bold text-slate-800 dark:text-white truncate">
                             {displayName}
                         </p>
-                        <p className="text-xs text-slate-400 truncate">Divisão de Endemias</p>
+                        <p className="text-xs text-slate-400 truncate">{getRoleLabel()}</p>
                     </div>
                 </div>
             </div>

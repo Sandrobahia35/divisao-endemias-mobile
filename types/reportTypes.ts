@@ -116,3 +116,79 @@ export interface ExportData {
     agrupamento: ExportGrouping;
 }
 
+/**
+ * Dados consolidados para dashboard
+ */
+export interface ConsolidatedData {
+    totalImoveis: number;
+    totalFechados: number;
+    totalRecuperados: number;
+    totalInformados: number;
+    pendenciaPercent: number;
+    totalDepositos: number;
+    depositosPorTipo: {
+        A1: number;
+        A2: number;
+        B: number;
+        C: number;
+        D1: number;
+        D2: number;
+        E: number;
+    };
+    totalEliminados: number;
+    totalAgentes: number;
+    totalDiasTrabalhados: number;
+    totalReports: number;
+    concluidos: number;
+    totalTratamentos: {
+        inspecionados: number;
+        focal: number;
+        perifocal: number;
+    };
+    totalLarvicida: {
+        quantidade: number;
+        depTratados: number;
+    };
+}
+
+/**
+ * Dados por semana para gráficos
+ */
+export interface WeekData {
+    semana: string;
+    imoveis: number;
+    depositos: number;
+    eliminados: number;
+    agentes: number;
+    reports: number;
+}
+
+/**
+ * Item de ranking de localidade
+ */
+export interface LocalityRankingItem {
+    localidade: string;
+    eliminados: number;
+    depositos: number;
+    imoveis: number;
+    agentes: number;
+    rank: number;
+}
+
+/**
+ * Dados agrupados para tabela analítica
+ */
+export interface GroupedAnalyticsData {
+    key: string;
+    label: string;
+    imoveis: number;
+    fechados: number;
+    recuperados: number;
+    informados: number;
+    pendencias: number;
+    cargaLarvicida: number;
+    reports: number;
+    concluidos: number;
+    percentConcluido: number;
+}
+

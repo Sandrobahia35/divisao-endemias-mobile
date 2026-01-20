@@ -196,7 +196,11 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({ data }) => {
               </div>
               <div className="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-1">
                 <span className="text-slate-500">Pendência:</span>
-                <span className="font-bold text-amber-600">{data.imoveis.pendencia}%</span>
+                <span className="font-bold text-amber-600">
+                  {data.imoveis.informados > 0
+                    ? (((data.imoveis.fechados - data.imoveis.recuperados) * 100 / data.imoveis.informados).toFixed(2))
+                    : '0.00'}%
+                </span>
               </div>
             </div>
           </div>

@@ -1,24 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ReportService } from '../services/reportService';
 import { Report, ReportFiltersExtended } from '../types/reportTypes';
-import { LocalidadeCard } from '../components/LocalidadeCard';
 import { ReportDetail } from '../components/ReportDetail';
-import { ReportFilters } from '../components/ReportFilters';
-import { AnalyticsDashboard } from '../components/AnalyticsDashboard';
 import { ExportModal } from '../components/ExportModal';
+import { ListaDashboard } from '../components/ListaDashboard';
 
 interface ReportsPageProps {
     onNavigateToForm: () => void;
     onEditReport?: (id: string) => void;
 }
 
-type ViewType = 'lista' | 'analises';
-
 export const ReportsPage: React.FC<ReportsPageProps> = ({ onNavigateToForm, onEditReport }) => {
     const [reports, setReports] = useState<Report[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
-    const [activeView, setActiveView] = useState<ViewType>('lista');
     const [filters, setFilters] = useState<ReportFiltersExtended>({});
     const [showExportModal, setShowExportModal] = useState(false);
     const [showFilters, setShowFilters] = useState(true);
@@ -37,7 +32,7 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({ onNavigateToForm, onEd
             if (hasFilters) {
                 // Mapeia os filtros do componente para o formato esperado pelo serviço
                 data = await ReportService.getReportsByAdvancedFilter({
-                    semanas: filters.semanasEpidemiologicas, // Compatibilidade com o tipo esperado
+                    semanas: filters.semanasEpidemiologicas,
                     localidades: filters.localidades,
                     ciclos: filters.ciclos
                 });
@@ -68,7 +63,6 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({ onNavigateToForm, onEd
         };
         loadDetail();
     }, [selectedReportId]);
-
 
     const handleViewReport = (id: string) => {
         setSelectedReportId(id);
@@ -134,42 +128,10 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({ onNavigateToForm, onEd
                         )}
                     </button>
                 </div>
-
-                {/* Toggle de visualização */}
-                <div className="flex px-4 pb-3 gap-2">
-                    <button
-                        onClick={() => setActiveView('lista')}
-                        className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 ${activeView === 'lista'
-                            ? 'bg-primary text-white'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
-                            }`}
-                    >
-                        <span className="material-symbols-outlined text-lg">list</span>
-                        Lista
-                    </button>
-                    <button
-                        onClick={() => setActiveView('analises')}
-                        className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 ${activeView === 'analises'
-                            ? 'bg-primary text-white'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
-                            }`}
-                    >
-                        <span className="material-symbols-outlined text-lg">analytics</span>
-                        Análises
-                    </button>
-                </div>
             </header>
 
             {/* Content */}
             <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 pb-24 md:pb-8 space-y-4 no-scrollbar">
-
-                {/* Filtros (visíveis/ocultos) */}
-                {showFilters && (
-                    <ReportFilters
-                        filters={filters}
-                        onFiltersChange={setFilters}
-                    />
-                )}
 
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20">
@@ -203,54 +165,18 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({ onNavigateToForm, onEd
                                 )}
                             </div>
                         ) : (
-                            <>
-                                {/* Visualização: Lista */}
-                                {activeView === 'lista' && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-                                        {reports.map(report => (
-                                            <LocalidadeCard
-                                                key={report.id}
-                                                report={report}
-                                                onView={handleViewReport}
-                                                onEdit={onEditReport}
-                                                onDelete={() => handleDeleteReport(report.id)}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
-
-                                {/* Visualização: Análises */}
-                                {activeView === 'analises' && (
-                                    <>
-                                        <AnalyticsDashboard reports={reports} />
-
-                                        {/* Botão de Exportar */}
-                                        {reports.length > 0 && (
-                                            <button
-                                                onClick={() => setShowExportModal(true)}
-                                                className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary to-blue-600 hover:from-primary-dark hover:to-blue-700 text-white font-bold transition-all flex items-center justify-center gap-3 shadow-lg"
-                                            >
-                                                <span className="material-symbols-outlined">download</span>
-                                                Exportar {reports.length} Relatórios
-                                            </button>
-                                        )}
-                                    </>
-                                )}
-                            </>
+                            <ListaDashboard
+                                reports={reports}
+                                filters={filters}
+                                onFiltersChange={setFilters}
+                                onViewReport={handleViewReport}
+                                onEditReport={onEditReport}
+                                onDeleteReport={handleDeleteReport}
+                            />
                         )}
                     </>
                 )}
             </main>
-
-            {/* FAB para novo relatório */}
-            {reports.length > 0 && activeView === 'lista' && !loading && (
-                <button
-                    onClick={onNavigateToForm}
-                    className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 w-14 h-14 rounded-full bg-primary text-white shadow-xl flex items-center justify-center hover:bg-primary-dark active:scale-95 transition-all"
-                >
-                    <span className="material-symbols-outlined text-2xl">add</span>
-                </button>
-            )}
 
             {/* Modal de Exportação */}
             <ExportModal

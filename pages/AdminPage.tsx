@@ -50,6 +50,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBack }) => {
         localidadeMaisFrequente: null as string | null
     });
     const [selectedWeek, setSelectedWeek] = useState('');
+    const [isUserListOpen, setIsUserListOpen] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -496,75 +497,87 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBack }) => {
 
                         {/* Lista de Usuários */}
                         <section className="bg-white dark:bg-surface-dark rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-                            <div className="bg-slate-50 dark:bg-slate-800/50 px-4 py-2 border-b border-slate-100 dark:border-slate-800">
-                                <h3 className="text-xs font-bold text-slate-500 uppercase">Lista de Usuários</h3>
-                            </div>
-                            <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                                {users.length === 0 ? (
-                                    <div className="p-8 text-center">
-                                        <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2">person_off</span>
-                                        <p className="text-sm text-slate-400">Nenhum usuário cadastrado</p>
-                                        <button
-                                            onClick={() => setShowUserModal(true)}
-                                            className="mt-4 px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold"
-                                        >
-                                            Adicionar primeiro usuário
-                                        </button>
-                                    </div>
-                                ) : (
-                                    users.map(user => (
-                                        <div key={user.id} className="flex items-center gap-3 px-4 py-3">
-                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${user.ativo ? 'bg-primary/10' : 'bg-slate-100 dark:bg-slate-800'}`}>
-                                                <span className={`material-symbols-outlined ${user.ativo ? 'text-primary' : 'text-slate-400'}`}>person</span>
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2">
-                                                    <p className={`text-sm font-bold truncate ${user.ativo ? 'text-slate-800 dark:text-white' : 'text-slate-400 line-through'}`}>
-                                                        {user.nome}
-                                                    </p>
-                                                    {!user.ativo && (
-                                                        <span className="px-1.5 py-0.5 bg-red-100 text-red-600 text-[8px] font-bold rounded uppercase">Inativo</span>
-                                                    )}
-                                                </div>
-                                                <div className="flex items-center gap-2 mt-0.5">
-                                                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${getRoleColor(user.funcao)}`}>
-                                                        {getRoleLabel(user.funcao)}
-                                                    </span>
-                                                    <span className="text-[10px] text-slate-400">@{user.usuario}</span>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <button
-                                                    onClick={() => setEditingUser({
-                                                        id: user.id,
-                                                        nome: user.nome,
-                                                        email: user.email || user.usuario,
-                                                        funcao: user.funcao
-                                                    })}
-                                                    className="p-2 rounded-lg hover:bg-primary/10 text-primary transition-colors"
-                                                    title="Editar"
-                                                >
-                                                    <span className="material-symbols-outlined text-lg">edit</span>
-                                                </button>
-                                                <button
-                                                    onClick={() => handleToggleUserStatus(user.id)}
-                                                    className={`p-2 rounded-lg transition-colors ${user.ativo ? 'hover:bg-orange-50 text-orange-500' : 'hover:bg-green-50 text-green-500'}`}
-                                                    title={user.ativo ? 'Desativar' : 'Ativar'}
-                                                >
-                                                    <span className="material-symbols-outlined text-lg">{user.ativo ? 'person_off' : 'person'}</span>
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteUser(user.id, user.nome)}
-                                                    className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition-colors"
-                                                    title="Excluir"
-                                                >
-                                                    <span className="material-symbols-outlined text-lg">delete</span>
-                                                </button>
-                                            </div>
+                            <button
+                                onClick={() => setIsUserListOpen(!isUserListOpen)}
+                                className="w-full flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 px-4 py-3 border-b border-slate-100 dark:border-slate-800 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+                            >
+                                <h3 className="text-xs font-bold text-slate-500 uppercase flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-lg">group</span>
+                                    Lista de Usuários ({users.length})
+                                </h3>
+                                <span className={`material-symbols-outlined text-slate-400 transition-transform duration-300 ${isUserListOpen ? 'rotate-180' : ''}`}>
+                                    expand_more
+                                </span>
+                            </button>
+
+                            {isUserListOpen && (
+                                <div className="divide-y divide-slate-100 dark:divide-slate-800 animate-in slide-in-from-top-2 duration-200">
+                                    {users.length === 0 ? (
+                                        <div className="p-8 text-center">
+                                            <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2">person_off</span>
+                                            <p className="text-sm text-slate-400">Nenhum usuário cadastrado</p>
+                                            <button
+                                                onClick={() => setShowUserModal(true)}
+                                                className="mt-4 px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold"
+                                            >
+                                                Adicionar primeiro usuário
+                                            </button>
                                         </div>
-                                    ))
-                                )}
-                            </div>
+                                    ) : (
+                                        users.map(user => (
+                                            <div key={user.id} className="flex items-center gap-3 px-4 py-3">
+                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${user.ativo ? 'bg-primary/10' : 'bg-slate-100 dark:bg-slate-800'}`}>
+                                                    <span className={`material-symbols-outlined ${user.ativo ? 'text-primary' : 'text-slate-400'}`}>person</span>
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2">
+                                                        <p className={`text-sm font-bold truncate ${user.ativo ? 'text-slate-800 dark:text-white' : 'text-slate-400 line-through'}`}>
+                                                            {user.nome}
+                                                        </p>
+                                                        {!user.ativo && (
+                                                            <span className="px-1.5 py-0.5 bg-red-100 text-red-600 text-[8px] font-bold rounded uppercase">Inativo</span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-2 mt-0.5">
+                                                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${getRoleColor(user.funcao)}`}>
+                                                            {getRoleLabel(user.funcao)}
+                                                        </span>
+                                                        <span className="text-[10px] text-slate-400">@{user.usuario}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <button
+                                                        onClick={() => setEditingUser({
+                                                            id: user.id,
+                                                            nome: user.nome,
+                                                            email: user.email || user.usuario,
+                                                            funcao: user.funcao
+                                                        })}
+                                                        className="p-2 rounded-lg hover:bg-primary/10 text-primary transition-colors"
+                                                        title="Editar"
+                                                    >
+                                                        <span className="material-symbols-outlined text-lg">edit</span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleToggleUserStatus(user.id)}
+                                                        className={`p-2 rounded-lg transition-colors ${user.ativo ? 'hover:bg-orange-50 text-orange-500' : 'hover:bg-green-50 text-green-500'}`}
+                                                        title={user.ativo ? 'Desativar' : 'Ativar'}
+                                                    >
+                                                        <span className="material-symbols-outlined text-lg">{user.ativo ? 'person_off' : 'person'}</span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteUser(user.id, user.nome)}
+                                                        className="p-2 rounded-lg hover:bg-red-50 text-red-500 transition-colors"
+                                                        title="Excluir"
+                                                    >
+                                                        <span className="material-symbols-outlined text-lg">delete</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            )}
                         </section>
 
                         {/* Árvore de Hierarquia */}

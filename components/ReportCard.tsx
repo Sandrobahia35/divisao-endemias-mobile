@@ -46,8 +46,8 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onView, onDelete
                         {report.semanaEpidemiologica}
                     </span>
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${report.concluido
-                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                            : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                        : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
                         }`}>
                         {report.concluido ? 'CONCLUÍDO' : 'EM ABERTO'}
                     </span>
@@ -72,7 +72,7 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onView, onDelete
                     <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2 text-center">
                         <p className="text-[9px] font-bold text-blue-500 uppercase tracking-wider">Depósitos</p>
                         <p className="text-lg font-black text-blue-600 dark:text-blue-400">
-                            {Object.values(report.data.depositos).reduce((a, b) => a + b, 0)}
+                            {(Object.values(report.data.depositos) as number[]).reduce((a, b) => a + b, 0)}
                         </p>
                     </div>
                     <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-2 text-center">

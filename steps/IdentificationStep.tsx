@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { FormData } from '../types';
 import { MUNICIPIOS, CATEGORIAS, LOCALIDADES } from '../constants';
 import { supabase } from '../services/supabaseClient';
@@ -14,39 +15,23 @@ interface IdentificationStepProps {
 export const IdentificationStep: React.FC<IdentificationStepProps> = ({ data, onChange, onClear }) => {
   const [allowedLocalidades, setAllowedLocalidades] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userInfo, setUserInfo] = useState<{ role: string; name: string } | null>(null);
+  const { user, profile, getRoleLabel } = useAuth();
+  // Remove local userInfo state as we can derive from profile
+  // const [userInfo, setUserInfo] = useState<{ role: string; name: string } | null>(null);
 
   useEffect(() => {
     loadUserLocalidades();
-  }, []);
+  }, [user]); // Add user dependency
 
   const loadUserLocalidades = async () => {
     setLoading(true);
     try {
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.log('No user logged in, showing all localities');
+      if (!user || !profile) {
+        console.log('No user/profile, showing all localities');
         setAllowedLocalidades(LOCALIDADES);
         setLoading(false);
         return;
       }
-
-      // Get user profile
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id, full_name, role')
-        .eq('id', user.id)
-        .single();
-
-      if (!profile) {
-        console.log('No profile found, showing all localities');
-        setAllowedLocalidades(LOCALIDADES);
-        setLoading(false);
-        return;
-      }
-
-      setUserInfo({ role: profile.role || 'user', name: profile.full_name || 'Usuário' });
 
       // Check role and get appropriate localities
       if (profile.role === 'admin' || profile.role === 'gestor') {
@@ -107,16 +92,6 @@ export const IdentificationStep: React.FC<IdentificationStepProps> = ({ data, on
     }
   };
 
-  const getRoleLabel = (role: string) => {
-    switch (role) {
-      case 'admin': return 'Administrador';
-      case 'gestor': return 'Gestor';
-      case 'supervisor_geral': return 'Supervisor Geral';
-      case 'supervisor_area': return 'Supervisor de Área';
-      default: return role;
-    }
-  };
-
   return (
     <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-4 duration-300">
       <div className="px-5 pt-4">
@@ -124,10 +99,12 @@ export const IdentificationStep: React.FC<IdentificationStepProps> = ({ data, on
         <p className="text-slate-500 dark:text-slate-400 text-base font-normal mt-2">
           Preencha os dados geográficos e de identificação da localidade inspecionada em Itabuna.
         </p>
-        {userInfo && (
+
+        {/* User Info Card using Context */}
+        {profile && (
           <div className="mt-3 px-3 py-2 bg-primary/10 dark:bg-primary/20 rounded-lg">
             <p className="text-xs text-primary dark:text-blue-300">
-              <span className="font-bold">{userInfo.name}</span> • {getRoleLabel(userInfo.role)}
+              <span className="font-bold">{profile.full_name || 'Usuário'}</span> • {getRoleLabel()}
             </p>
           </div>
         )}
@@ -192,6 +169,41 @@ export const IdentificationStep: React.FC<IdentificationStepProps> = ({ data, on
           </div>
         </div>
       </div>
+
+      {/* Resumo de Dados (Se houver dados preenchidos) */}
+      {(data.imoveis.residencias > 0 || data.imoveis.comercios > 0 || data.imoveis.terrenos > 0 || data.imoveis.pontos > 0) && (
+        <div className="mx-5 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-800">
+          <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+            <span className="material-symbols-outlined text-sm">analytics</span>
+            Resumo Atual
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white dark:bg-surface-dark p-3 rounded-lg shadow-sm">
+              <p className="text-[10px] text-slate-400 font-bold uppercase">Total Imóveis</p>
+              <p className="text-xl font-black text-slate-800 dark:text-white">
+                {(data.imoveis.residencias || 0) + (data.imoveis.comercios || 0) +
+                  (data.imoveis.terrenos || 0) + (data.imoveis.pontos || 0) + (data.imoveis.outros || 0)}
+              </p>
+            </div>
+            <div className="bg-white dark:bg-surface-dark p-3 rounded-lg shadow-sm">
+              <p className="text-[10px] text-slate-400 font-bold uppercase">Pendência</p>
+              <p className="text-xl font-black text-amber-600">
+                {(() => {
+                  const total = (data.imoveis.residencias || 0) + (data.imoveis.comercios || 0) +
+                    (data.imoveis.terrenos || 0) + (data.imoveis.pontos || 0) + (data.imoveis.outros || 0);
+                  const fechados = data.imoveis.fechados || 0;
+                  const recuperados = data.imoveis.recuperados || 0;
+                  const informados = total + fechados - recuperados;
+
+                  return informados > 0
+                    ? ((fechados - recuperados) * 100 / informados).toFixed(2)
+                    : '0.00';
+                })()}%
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Botão Limpar Formulário */}
       {onClear && (

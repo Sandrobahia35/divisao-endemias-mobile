@@ -9,6 +9,7 @@ interface AuthContextType {
     isAdmin: boolean;
     loading: boolean;
     signOut: () => Promise<void>;
+    getRoleLabel: () => string;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -18,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({
     isAdmin: false,
     loading: true,
     signOut: async () => { },
+    getRoleLabel: () => '',
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -79,8 +81,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const isAdmin = profile?.role === 'admin';
 
+    const getRoleLabel = () => {
+        const role = profile?.role;
+        switch (role) {
+            case 'admin': return 'Administrador';
+            case 'gestor': return 'Gestor';
+            case 'supervisor_geral': return 'Supervisor Geral';
+            case 'supervisor_area': return 'Supervisor de Área';
+            default: return 'Agente de Campo';
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ session, user, profile, isAdmin, loading, signOut }}>
+        <AuthContext.Provider value={{ session, user, profile, isAdmin, loading, signOut, getRoleLabel }}>
             {!loading && children}
         </AuthContext.Provider>
     );

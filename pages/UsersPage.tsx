@@ -8,13 +8,13 @@ interface UsersPageProps {
 }
 
 export const UsersPage: React.FC<UsersPageProps> = ({ isDarkMode, onToggleDarkMode }) => {
-    const { user, profile, signOut } = useAuth();
+    const { user, profile, signOut, getRoleLabel } = useAuth();
     const [isSigningOut, setIsSigningOut] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     const displayName = profile?.full_name || user?.email?.split('@')[0] || 'Usuário';
-    const displayRole = profile?.role === 'admin' ? 'Administrador' : 'Agente de Campo';
+    const displayRole = getRoleLabel();
     const email = user?.email || '';
 
     const handleSignOut = async () => {

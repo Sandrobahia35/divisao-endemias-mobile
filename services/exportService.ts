@@ -11,8 +11,8 @@ export const ExportService = {
     /**
      * Prepara dados para exportação
      */
-    prepareExportData(reports: Report[], config: ExportConfig): ExportData {
-        const summary = ReportService.getSummary(reports);
+    async prepareExportData(reports: Report[], config: ExportConfig): Promise<ExportData> {
+        const summary = await ReportService.getSummary();
 
         return {
             titulo: `Relatórios Sivep-Endemias - ${config.tipoAgrupamento}`,
@@ -45,7 +45,7 @@ export const ExportService = {
 
         // Resumo
         if (config.incluirResumo) {
-            const summary = ReportService.getSummary(reports);
+            const summary = this.computeSummaryFromReports(reports);
             doc.setFontSize(11);
             doc.setFont('helvetica', 'bold');
             doc.text('Resumo', 14, 48);
@@ -160,7 +160,7 @@ export const ExportService = {
 
         // Aba de resumo
         if (config.incluirResumo) {
-            const summary = ReportService.getSummary(reports);
+            const summary = this.computeSummaryFromReports(reports);
             const resumoData = [
                 ['Resumo de Relatórios'],
                 [''],
@@ -192,9 +192,9 @@ export const ExportService = {
 
         // Aba por localidade
         if (config.tipoAgrupamento === 'localidade' || config.tipoAgrupamento === 'detalhado') {
-            const analytics = ReportService.getLocalityAnalytics();
+            const locAnalytics = this.computeLocalityAnalytics(reports);
             const locHeader = ['Localidade', 'Total Relatórios', 'Semanas Ativas'];
-            const locData = analytics.map(a => [
+            const locData = locAnalytics.map(a => [
                 a.localidade,
                 a.totalReports,
                 a.semanasAtivas.join(', ')
@@ -205,9 +205,9 @@ export const ExportService = {
 
         // Aba por ciclo
         if (config.tipoAgrupamento === 'ciclo' || config.tipoAgrupamento === 'detalhado') {
-            const analytics = ReportService.getCycleAnalytics();
+            const cycleAnalytics = this.computeCycleAnalytics(reports);
             const cicloHeader = ['Ciclo', 'Total Relatórios', 'Total Localidades'];
-            const cicloData = analytics.map(a => [
+            const cicloData = cycleAnalytics.map(a => [
                 a.ciclo,
                 a.totalReports,
                 a.totalLocalidades
@@ -257,7 +257,7 @@ export const ExportService = {
         const data = {
             titulo: 'Sivep-Endemias - Relatórios',
             geradoEm: new Date().toISOString(),
-            resumo: config.incluirResumo ? ReportService.getSummary(reports) : null,
+            resumo: config.incluirResumo ? this.computeSummaryFromReports(reports) : null,
             totalRegistros: reports.length,
             dados: reports
         };
@@ -290,5 +290,68 @@ export const ExportService = {
                 this.exportToJSON(reports, config);
                 break;
         }
+    },
+
+    /**
+     * Computa resumo a partir de um array de reports (sem I/O)
+     */
+    computeSummaryFromReports(reports: Report[]): ReportsSummary {
+        const total = reports.length;
+        const concluidos = reports.filter(r => r.concluido).length;
+        const emAberto = total - concluidos;
+
+        const ultimaSemana = reports.length > 0
+            ? reports.map(r => r.semanaEpidemiologica).sort().pop() || null
+            : null;
+
+        const locCounts: Record<string, number> = {};
+        reports.forEach(r => {
+            if (r.localidade) locCounts[r.localidade] = (locCounts[r.localidade] || 0) + 1;
+        });
+
+        let localidadeMaisFrequente: string | null = null;
+        let maxCount = 0;
+        Object.entries(locCounts).forEach(([loc, count]) => {
+            if (count > maxCount) {
+                maxCount = count;
+                localidadeMaisFrequente = loc;
+            }
+        });
+
+        return { total, concluidos, emAberto, ultimaSemana, localidadeMaisFrequente };
+    },
+
+    /**
+     * Computa analytics por localidade a partir de reports
+     */
+    computeLocalityAnalytics(reports: Report[]) {
+        const grouped: Record<string, Report[]> = {};
+        reports.forEach(r => {
+            if (!grouped[r.localidade]) grouped[r.localidade] = [];
+            grouped[r.localidade].push(r);
+        });
+
+        return Object.entries(grouped).map(([localidade, reps]) => ({
+            localidade,
+            totalReports: reps.length,
+            semanasAtivas: [...new Set(reps.map(r => r.semanaEpidemiologica))]
+        }));
+    },
+
+    /**
+     * Computa analytics por ciclo a partir de reports
+     */
+    computeCycleAnalytics(reports: Report[]) {
+        const grouped: Record<number, Report[]> = {};
+        reports.forEach(r => {
+            if (!grouped[r.ciclo]) grouped[r.ciclo] = [];
+            grouped[r.ciclo].push(r);
+        });
+
+        return Object.entries(grouped).map(([ciclo, reps]) => ({
+            ciclo: parseInt(ciclo),
+            totalReports: reps.length,
+            totalLocalidades: [...new Set(reps.map(r => r.localidade))].length
+        }));
     }
 };

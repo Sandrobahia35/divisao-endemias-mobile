@@ -8,7 +8,7 @@ interface HomePageProps {
 }
 
 export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
-    const { user, profile } = useAuth();
+    const { user, profile, getRoleLabel } = useAuth();
     const displayName = profile?.full_name || user?.email?.split('@')[0] || 'Usuário';
 
     const [summary, setSummary] = useState<ReportsSummary>({
@@ -63,7 +63,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                             <div>
                                 <p className="text-sm text-white/80 font-medium">{getCurrentGreeting()}!</p>
                                 <h1 className="text-xl md:text-2xl font-black">{displayName}</h1>
-                                <p className="text-xs text-white/70 mt-0.5">Divisão de Endemias</p>
+                                <p className="text-xs text-white/70 mt-0.5">{getRoleLabel()} • Divisão de Endemias</p>
                             </div>
                         </div>
                         {profile?.role === 'admin' && (
