@@ -11,9 +11,10 @@ Sistema de Vigilância Epidemiológica para registro e análise de atividades de
 O **Sivep-Endemias** é uma aplicação web/mobile para gerenciamento de atividades de controle vetorial, permitindo:
 
 - 📝 Registro de atividades por semana epidemiológica e localidade
-- 📊 Análise de dados com filtros avançados
-- 📥 Exportação de relatórios em múltiplos formatos
+- 📊 Análise de dados com filtros avançados e dashboard analítico
+- 📥 Exportação de relatórios em múltiplos formatos (PDF, Excel, CSV)
 - 👥 Gestão de usuários e permissões
+- 🔐 Autenticação segura com Google
 
 ## 🚀 Tecnologias
 
@@ -23,7 +24,7 @@ O **Sivep-Endemias** é uma aplicação web/mobile para gerenciamento de ativida
 | TypeScript | 5.x | Tipagem estática |
 | Vite | 5.x | Build tool |
 | Tailwind CSS | 3.x | Estilização |
-| Supabase | - | Backend (futuro) |
+| Supabase | - | Backend e autenticação |
 
 ## 🏗️ Estrutura do Projeto
 
@@ -32,22 +33,38 @@ divisao-endemias-mobile/
 ├── components/           # Componentes reutilizáveis
 │   ├── BottomNavigation.tsx
 │   ├── SidebarNavigation.tsx
-│   ├── AdvancedFilters.tsx (planejado)
-│   ├── AnalyticsDashboard.tsx (planejado)
-│   └── ExportModal.tsx (planejado)
+│   ├── TopAppBar.tsx
+│   ├── FilterBar.tsx
+│   ├── WeekEvolutionChart.tsx
+│   ├── ListaDashboard.tsx
+│   ├── SemanaSelector.tsx
+│   └── ExportModal.tsx
+├── contexts/             # Contextos React
+│   ├── AuthContext.tsx
+│   └── ThemeContext.tsx
 ├── pages/                # Páginas da aplicação
 │   ├── HomePage.tsx
 │   ├── ReportsPage.tsx
 │   ├── AdminPage.tsx
-│   └── UsersPage.tsx
+│   ├── UsersPage.tsx
+│   └── LoginPage.tsx
 ├── services/             # Lógica de negócio
 │   ├── reportService.ts
 │   ├── userService.ts
-│   └── exportService.ts (planejado)
+│   ├── profileService.ts
+│   ├── exportService.ts
+│   └── supabaseClient.ts
 ├── steps/                # Steps do formulário
+│   ├── IdentificationStep.tsx
+│   ├── PeriodStep.tsx
+│   ├── SummaryStep.tsx
+│   ├── DepositsStep.tsx
+│   ├── ChemicalsStep.tsx
+│   ├── HumanResourcesStep.tsx
+│   └── ReviewStep.tsx
 ├── types/                # Definições TypeScript
-│   ├── reportTypes.ts
-│   └── userTypes.ts
+│   └── index.ts
+├── constants.ts          # Constantes da aplicação
 └── App.tsx               # Componente principal
 ```
 
@@ -56,6 +73,7 @@ divisao-endemias-mobile/
 ### Pré-requisitos
 - Node.js 18+
 - npm ou yarn
+- Conta no Supabase
 
 ### Instalação
 
@@ -69,8 +87,23 @@ npm install
 
 # Configure as variáveis de ambiente
 cp .env.example .env.local
-# Edite .env.local com suas configurações
+# Edite .env.local com suas configurações do Supabase
+```
 
+### Configuração do Supabase
+
+1. Crie um projeto no [Supabase](https://supabase.com)
+2. Configure a autenticação com Google OAuth
+3. Copie as credenciais para o arquivo `.env.local`:
+
+```env
+VITE_SUPABASE_URL=https://seu-projeto.supabase.co
+VITE_SUPABASE_ANON_KEY=sua-chave-anonima
+```
+
+### Execução
+
+```bash
 # Execute em modo desenvolvimento
 npm run dev
 ```
@@ -83,21 +116,16 @@ A aplicação estará disponível em `http://localhost:5173`
 
 | Funcionalidade | Descrição |
 |---------------|-----------|
+| **Autenticação Google** | Login seguro com conta Google |
 | **Registro de Atividades** | Formulário multi-step para cadastro |
 | **Gestão de Relatórios** | Listagem por semana epidemiológica |
+| **Filtros Avançados** | Filtro por localidade, ciclo, semana |
+| **Dashboard Analytics** | Gráficos e métricas visuais |
+| **Exportação Multi-formato** | PDF, Excel, CSV |
 | **Painel Administrativo** | Gestão de usuários e configurações |
 | **Layout Responsivo** | Sidebar para desktop, bottom nav para mobile |
-| **Modo Escuro** | Suporte a dark mode |
-
-### Planejadas 🔜
-
-| Funcionalidade | Descrição | Status |
-|---------------|-----------|--------|
-| **Filtros Avançados** | Multi-select por localidade, ciclo, semana | Planejado |
-| **Dashboard Analytics** | Gráficos e métricas por localidade/ciclo | Planejado |
-| **Exportação Multi-formato** | PDF, Excel, CSV, JSON | Planejado |
-| **Backend Supabase** | Persistência em nuvem | Planejado |
-| **Autenticação** | Login com Google/Email | Planejado |
+| **Modo Escuro** | Suporte completo a dark mode |
+| **Perfil de Usuário** | Avatar, informações e configurações |
 
 ## 📊 Estrutura de Dados
 
@@ -106,86 +134,63 @@ A aplicação estará disponível em `http://localhost:5173`
 ```typescript
 interface Report {
   id: string;                    // UUID único
-  createdAt: string;             // Data de criação
-  updatedAt: string;             // Data de atualização
-  semanaEpidemiologica: string;  // Ex: "SE 42"
+  created_at: string;            // Data de criação
+  user_id: string;               // ID do usuário
+  semana_epidemiologica: string; // Ex: "SE 42"
   localidade: string;            // Nome da localidade
-  categoriaLocalidade: string;   // "1" (BRR) ou "2" (POV)
+  categoria_localidade: string;  // "1" (BRR) ou "2" (POV)
   ciclo: number;                 // Ciclo de trabalho
   ano: number;                   // Ano
   concluido: boolean;            // Status
-  data: FormData;                // Dados completos
+  data: FormData;                // Dados completos (JSONB)
 }
 ```
 
-### User (Usuário)
+### Profile (Perfil de Usuário)
 
 ```typescript
-interface User {
+interface Profile {
   id: string;
-  nome: string;
-  usuario: string;
-  funcao: 'gestor' | 'supervisor_geral' | 'supervisor_area';
-  ativo: boolean;
-  criadoEm: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  role: 'admin' | 'gestor' | 'supervisor';
+  created_at: string;
+  updated_at: string;
 }
 ```
 
-## 🗄️ Backend API (Planejado)
+## 🔐 Autenticação
 
-### Tabelas Supabase
+O sistema utiliza **Supabase Auth** com suporte a:
 
-```sql
--- Relatórios
-CREATE TABLE reports (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  semana_epidemiologica VARCHAR(10),
-  localidade VARCHAR(100),
-  ciclo INTEGER,
-  ano INTEGER,
-  data JSONB,
-  user_id UUID REFERENCES auth.users(id)
-);
+- **Google OAuth**: Login com conta Google
+- **Row Level Security (RLS)**: Proteção de dados por usuário
+- **Gerenciamento de Sessão**: Token automático e refresh
 
--- Índices
-CREATE INDEX idx_reports_semana ON reports(semana_epidemiologica);
-CREATE INDEX idx_reports_localidade ON reports(localidade);
-CREATE INDEX idx_reports_ciclo ON reports(ciclo);
-```
+### Configuração do Google OAuth
 
-### Views Analytics
+1. Acesse o [Google Cloud Console](https://console.cloud.google.com)
+2. Crie um projeto ou selecione um existente
+3. Ative a API Google+ 
+4. Configure as credenciais OAuth 2.0
+5. Adicione a URL de callback do Supabase
 
-```sql
--- Analytics por localidade
-CREATE VIEW vw_analytics_localidade AS
-SELECT 
-  localidade,
-  COUNT(*) as total_reports,
-  array_agg(DISTINCT ciclo) as ciclos
-FROM reports
-GROUP BY localidade;
+## 🔐 Permissões de Usuário
 
--- Analytics por ciclo
-CREATE VIEW vw_analytics_ciclo AS
-SELECT 
-  ciclo,
-  COUNT(*) as total_reports,
-  COUNT(DISTINCT localidade) as total_localidades
-FROM reports
-GROUP BY ciclo;
-```
+| Função | Visualizar | Criar | Editar | Excluir | Admin |
+|--------|------------|-------|--------|---------|-------|
+| Admin/Gestor | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Supervisor | ✅ | ✅ | ✅ | ❌ | ❌ |
 
 ## 📥 Exportação de Dados
 
-### Formatos Suportados (Planejado)
+### Formatos Suportados
 
 | Formato | Extensão | Descrição |
 |---------|----------|-----------|
-| PDF | .pdf | Relatório formatado com gráficos |
-| Excel | .xlsx | Planilha com múltiplas abas |
-| CSV | .csv | Dados tabulares simples |
-| JSON | .json | Dados estruturados |
+| PDF | .pdf | Relatório formatado |
+| Excel | .xlsx | Planilha completa |
+| CSV | .csv | Dados tabulares |
 
 ### Tipos de Agrupamento
 
@@ -194,18 +199,10 @@ GROUP BY ciclo;
 - **Por Semana**: Relatórios agrupados por SE
 - **Detalhado**: Todos os campos de cada relatório
 
-## 🔐 Permissões de Usuário
-
-| Função | Visualizar | Criar | Editar | Excluir | Admin |
-|--------|------------|-------|--------|---------|-------|
-| Gestor | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Supervisor Geral | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Supervisor Área | ✅ | ✅ | ❌ | ❌ | ❌ |
-
 ## 🧪 Testes
 
 ```bash
-# Executar testes (quando implementados)
+# Executar testes
 npm run test
 
 # Executar com coverage
@@ -214,24 +211,29 @@ npm run test:coverage
 
 ## 📝 Changelog
 
-### v1.1.0 (Planejado)
-- [ ] Filtros avançados multi-select
-- [ ] Dashboard de analytics
-- [ ] Exportação multi-formato
-- [ ] Integração Supabase
-
-### v1.0.0 (Atual)
-- [x] Formulário de registro de atividades
-- [x] Listagem de relatórios por semana
-- [x] Painel administrativo
-- [x] Gestão de usuários
+### v1.0.0 (Janeiro 2026)
+- [x] Formulário de registro de atividades (7 etapas)
+- [x] Listagem de relatórios por semana epidemiológica
+- [x] Autenticação com Google OAuth
+- [x] Painel administrativo completo
+- [x] Gestão de usuários (admin, gestor, supervisor)
+- [x] Dashboard com gráficos de evolução
+- [x] Exportação em PDF, Excel e CSV
+- [x] Filtros avançados por localidade, ciclo e semana
 - [x] Layout responsivo (desktop/mobile)
-- [x] Modo escuro
+- [x] Modo escuro completo
+- [x] Perfil de usuário com upload de avatar
 
-## 👥 Equipe
+## 👨‍💻 Desenvolvedor
 
-Desenvolvido pela **Divisão de Endemias**
+**Elissandro Oliveira**
+
+## 🏢 Organização
+
+**Divisão de Endemias - Itabuna**
 
 ## 📄 Licença
+
+© 2026 Divisão de Endemias - Itabuna. Todos os direitos reservados.
 
 Este projeto é de uso interno da Divisão de Endemias.
