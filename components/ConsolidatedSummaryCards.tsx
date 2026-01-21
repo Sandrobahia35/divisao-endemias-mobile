@@ -20,6 +20,15 @@ export const ConsolidatedSummaryCards: React.FC<ConsolidatedSummaryCardsProps> =
             iconBg: 'bg-blue-100 dark:bg-blue-900/30'
         },
         {
+            title: 'Total Quarteirões',
+            value: data.totalQuarteiroes,
+            icon: 'grid_view',
+            color: 'from-orange-500 to-red-500',
+            bgLight: 'bg-orange-50',
+            textColor: 'text-orange-600',
+            iconBg: 'bg-orange-100 dark:bg-orange-900/30'
+        },
+        {
             title: 'Fechados',
             value: data.totalFechados,
             icon: 'door_front',
@@ -84,7 +93,7 @@ export const ConsolidatedSummaryCards: React.FC<ConsolidatedSummaryCardsProps> =
             iconBg: 'bg-indigo-100 dark:bg-indigo-900/30'
         },
         {
-            title: 'Agentes (ACE)',
+            title: 'Homen/Dia trabalhado',
             value: data.totalAgentes,
             icon: 'groups',
             color: 'from-pink-500 to-rose-400',

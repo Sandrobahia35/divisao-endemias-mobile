@@ -141,7 +141,11 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({ data }) => {
             </div>
 
             {/* Detalhamento de imóveis */}
-            <div className="grid grid-cols-5 gap-2 text-center text-xs">
+            <div className="grid grid-cols-6 gap-2 text-center text-xs">
+              <div className="bg-slate-50 dark:bg-slate-800/40 p-2 rounded-lg">
+                <p className="text-[8px] font-bold text-slate-400">QTD. Q.</p>
+                <p className="font-bold">{data.imoveis.numeroQuarteiroes}</p>
+              </div>
               <div className="bg-slate-50 dark:bg-slate-800/40 p-2 rounded-lg">
                 <p className="text-[8px] font-bold text-slate-400">RES</p>
                 <p className="font-bold">{data.imoveis.residencias}</p>
@@ -327,7 +331,7 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({ data }) => {
 
             <div className="grid grid-cols-4 gap-3">
               <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-lg text-center">
-                <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Agentes</p>
+                <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Homen/Dia trabalhado</p>
                 <p className="text-lg font-black dark:text-white">{data.agentes}</p>
               </div>
               <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-lg text-center">

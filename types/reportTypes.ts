@@ -120,6 +120,7 @@ export interface ExportData {
  * Dados consolidados para dashboard
  */
 export interface ConsolidatedData {
+    totalQuarteiroes: number;
     totalImoveis: number;
     totalFechados: number;
     totalRecuperados: number;

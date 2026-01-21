@@ -11,6 +11,7 @@ export function useDataConsolidation(reports: Report[]) {
     // Dados consolidados (totais)
     const consolidated = useMemo<ConsolidatedData>(() => {
         const initial: ConsolidatedData = {
+            totalQuarteiroes: 0,
             totalImoveis: 0,
             totalFechados: 0,
             totalRecuperados: 0,
@@ -32,6 +33,7 @@ export function useDataConsolidation(reports: Report[]) {
 
             // Imóveis
             const imoveis = data.imoveis;
+            acc.totalQuarteiroes += imoveis.numeroQuarteiroes || 0;
             acc.totalImoveis += (imoveis.residencias || 0) + (imoveis.comercios || 0) +
                 (imoveis.terrenos || 0) + (imoveis.pontos || 0) + (imoveis.outros || 0);
 

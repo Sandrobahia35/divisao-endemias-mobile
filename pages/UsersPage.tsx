@@ -187,11 +187,15 @@ export const UsersPage: React.FC<UsersPageProps> = () => {
                         </div>
                         <div className="flex items-center justify-between">
                             <span className="text-sm text-slate-600 dark:text-slate-400">Build</span>
-                            <span className="text-sm font-semibold text-slate-800 dark:text-white">2026.01.18</span>
+                            <span className="text-sm font-semibold text-slate-800 dark:text-white">2026.01.20</span>
                         </div>
                         <div className="flex items-center justify-between">
                             <span className="text-sm text-slate-600 dark:text-slate-400">Desenvolvido por</span>
-                            <span className="text-sm font-semibold text-primary">Divisão de Endemias</span>
+                            <span className="text-sm font-semibold text-primary">Elissandro Oliveira</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm text-slate-600 dark:text-slate-400">Organização</span>
+                            <span className="text-sm font-semibold text-slate-800 dark:text-white">Divisão de Endemias - Itabuna</span>
                         </div>
                     </div>
                 </section>
@@ -210,6 +214,18 @@ export const UsersPage: React.FC<UsersPageProps> = () => {
                     {isSigningOut ? 'Saindo...' : 'Sair da Conta'}
                 </button>
             </main>
+
+            {/* Rodapé */}
+            <footer className="bg-white dark:bg-surface-dark border-t border-slate-200 dark:border-slate-800 px-4 py-4 pb-20 md:pb-4">
+                <div className="text-center space-y-1">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Desenvolvido por <span className="font-semibold text-primary">Elissandro Oliveira</span>
+                    </p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500">
+                        © {new Date().getFullYear()} Divisão de Endemias - Itabuna. Todos os direitos reservados.
+                    </p>
+                </div>
+            </footer>
         </div>
     );
 };

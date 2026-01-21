@@ -92,6 +92,13 @@ export const SummaryStep: React.FC<SummaryStepProps> = ({ data, onChange }) => {
         <div className="bg-white dark:bg-surface-dark rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
           <div className="grid grid-cols-2 gap-px bg-slate-100 dark:bg-slate-800">
             <EditableStatItem
+              icon="grid_view"
+              label="Nº Quarteirões"
+              value={data.imoveis.numeroQuarteiroes}
+              onChange={(v) => updateImoveis('numeroQuarteiroes', v)}
+              span={2}
+            />
+            <EditableStatItem
               icon="home"
               label="Residências"
               value={data.imoveis.residencias}

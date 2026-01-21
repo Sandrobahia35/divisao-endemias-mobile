@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Step, FormData } from './types';
+import { Step, type FormData } from './types';
 import { INITIAL_FORM_DATA } from './constants';
 import { TopAppBar } from './components/TopAppBar';
 import { Stepper } from './components/Stepper';
@@ -31,6 +31,19 @@ const AuthenticatedApp: React.FC = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [editingReportId, setEditingReportId] = useState<string | null>(null);
+
+  // Ref para o container principal do formulário
+  const mainContainerRef = React.useRef<HTMLDivElement>(null);
+
+  // Scroll to top quando mudar de etapa
+  useEffect(() => {
+    if (mainContainerRef.current) {
+      mainContainerRef.current.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+  }, [step]);
 
   // Gestão do hash da URL para navegação
   useEffect(() => {
@@ -280,7 +293,7 @@ const AuthenticatedApp: React.FC = () => {
         return <UsersPage />; // UsersPage now handles theme internally via Context
       case 'form':
         return (
-          <div className="flex flex-col h-screen md:h-auto">
+          <div className="flex flex-col h-[100dvh] md:h-auto overflow-hidden support-dvh">
             <TopAppBar
               title={getTitle()}
               onBack={step > 0 ? prevStep : undefined}
@@ -288,7 +301,7 @@ const AuthenticatedApp: React.FC = () => {
               actionText="Cancelar"
             />
 
-            <main className="flex-1 flex flex-col overflow-y-auto no-scrollbar pb-40 bg-background-light dark:bg-background-dark">
+            <main ref={mainContainerRef} className="flex-1 flex flex-col overflow-y-auto no-scrollbar pb-40 bg-background-light dark:bg-background-dark">
               <div className="max-w-3xl mx-auto w-full md:py-8">
 
                 {/* Desktop: Container com sombra e borda */}

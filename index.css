@@ -5,6 +5,13 @@
 /* Estilos globais e fontes */
 body {
     font-family: 'Public Sans', sans-serif;
+    overscroll-behavior-y: none;
+    /* Previne pull-to-refresh no mobile */
+    height: 100%;
+}
+
+html {
+    height: 100%;
 }
 
 /* Utilitários */

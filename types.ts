@@ -28,6 +28,7 @@ export interface FormData {
   semanaEpidemiologica: string;
   concluido: boolean;
   imoveis: {
+    numeroQuarteiroes: number;
     residencias: number;
     comercios: number;
     terrenos: number;

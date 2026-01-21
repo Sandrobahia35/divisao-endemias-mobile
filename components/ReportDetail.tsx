@@ -182,6 +182,10 @@ export const ReportDetail: React.FC<ReportDetailProps> = ({ report, onBack, onDe
                         <div>
                             <p className="text-[10px] uppercase font-bold text-slate-400 mb-2">Detalhamento por Tipo</p>
                             <div className="grid grid-cols-2 gap-2 text-xs">
+                                <div className="flex justify-between p-2 bg-slate-50 dark:bg-slate-800/40 rounded-lg col-span-2">
+                                    <span className="text-slate-500">Nº Quarteirões:</span>
+                                    <span className="font-bold">{data.imoveis.numeroQuarteiroes ?? 0}</span>
+                                </div>
                                 <div className="flex justify-between p-2 bg-slate-50 dark:bg-slate-800/40 rounded-lg">
                                     <span className="text-slate-500">Residências:</span>
                                     <span className="font-bold">{data.imoveis.residencias}</span>
@@ -225,9 +229,17 @@ export const ReportDetail: React.FC<ReportDetailProps> = ({ report, onBack, onDe
                                     <span className="text-green-600">Recuperados:</span>
                                     <span className="font-bold text-green-600">{data.imoveis.recuperados}</span>
                                 </div>
-                                <div className="flex justify-between p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg col-span-2">
+                                <div className="flex justify-between p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                                     <span className="text-blue-600">Informados:</span>
                                     <span className="font-bold text-blue-600">{data.imoveis.informados || 0}</span>
+                                </div>
+                                <div className="flex justify-between p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                                    <span className="text-amber-600">Pendência:</span>
+                                    <span className="font-bold text-amber-600">
+                                        {data.imoveis.informados > 0
+                                            ? (((data.imoveis.fechados - data.imoveis.recuperados) * 100 / data.imoveis.informados).toFixed(2))
+                                            : '0.00'}%
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -399,7 +411,7 @@ export const ReportDetail: React.FC<ReportDetailProps> = ({ report, onBack, onDe
                         {/* Equipe */}
                         <div className="grid grid-cols-2 gap-3">
                             <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-lg text-center">
-                                <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Agentes (ACE)</p>
+                                <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Homen/Dia trabalhado</p>
                                 <p className="text-2xl font-black text-slate-900 dark:text-white">{data.agentes}</p>
                             </div>
                             <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-lg text-center">
