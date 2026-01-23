@@ -7,11 +7,15 @@ interface LocalityRankingProps {
 }
 
 /**
- * Ranking visual de localidades por eliminados
+ * Ranking visual de localidades por menor índice de pendência
  */
 export const LocalityRanking: React.FC<LocalityRankingProps> = ({ data, maxItems = 10 }) => {
     const topItems = data.slice(0, maxItems);
-    const maxValue = topItems.length > 0 ? topItems[0].eliminados : 1;
+    // Para a barra, usamos a maior pendência como referência invertida
+    // O primeiro item (menor pendência) terá a barra mais cheia
+    const maxPendencia = topItems.length > 0
+        ? Math.max(...topItems.map(i => i.pendencia), 0.01) // Evita divisão por zero
+        : 1;
 
     if (topItems.length === 0) {
         return (
@@ -44,38 +48,47 @@ export const LocalityRanking: React.FC<LocalityRankingProps> = ({ data, maxItems
     const getBarColor = (rank: number) => {
         switch (rank) {
             case 1:
-                return 'from-amber-400 to-yellow-500';
+                return 'from-emerald-400 to-green-500';
             case 2:
-                return 'from-slate-300 to-slate-400';
+                return 'from-emerald-300 to-green-400';
             case 3:
-                return 'from-amber-600 to-orange-600';
+                return 'from-teal-400 to-emerald-500';
             default:
-                return 'from-blue-400 to-blue-500';
+                return 'from-green-400 to-teal-500';
         }
+    };
+
+    const getPendenciaColor = (pendencia: number) => {
+        if (pendencia <= 5) return 'text-emerald-600 dark:text-emerald-400';
+        if (pendencia <= 15) return 'text-amber-600 dark:text-amber-400';
+        return 'text-red-600 dark:text-red-400';
     };
 
     return (
         <div className="bg-white dark:bg-surface-dark rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
             {/* Header */}
-            <div className="px-5 py-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 border-b border-slate-200 dark:border-slate-700">
+            <div className="px-5 py-4 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/10 dark:to-green-900/10 border-b border-slate-200 dark:border-slate-700">
                 <h4 className="font-bold text-slate-700 dark:text-white flex items-center gap-2">
-                    <span className="material-symbols-outlined text-amber-500">emoji_events</span>
+                    <span className="material-symbols-outlined text-emerald-500">emoji_events</span>
                     Ranking de Localidades
-                    <span className="text-xs font-normal text-slate-400 ml-2">(por focos eliminados)</span>
+                    <span className="text-xs font-normal text-slate-400 ml-2">(menor pendência)</span>
                 </h4>
             </div>
 
             {/* Ranking List */}
             <div className="p-4 space-y-3">
                 {topItems.map((item, index) => {
-                    const percentage = maxValue > 0 ? (item.eliminados / maxValue) * 100 : 0;
+                    // Barra invertida: menor pendência = barra mais cheia
+                    const percentage = maxPendencia > 0
+                        ? Math.max(0, 100 - (item.pendencia / maxPendencia) * 100 + 20)
+                        : 100;
 
                     return (
                         <div
                             key={item.localidade}
                             className={`
                                 relative rounded-xl p-3 transition-all duration-300
-                                ${item.rank <= 3 ? 'bg-gradient-to-r from-amber-50/50 to-transparent dark:from-amber-900/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}
+                                ${item.rank <= 3 ? 'bg-gradient-to-r from-emerald-50/50 to-transparent dark:from-emerald-900/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}
                             `}
                             style={{ animationDelay: `${index * 50}ms` }}
                         >
@@ -91,8 +104,8 @@ export const LocalityRanking: React.FC<LocalityRankingProps> = ({ data, maxItems
                                         <h5 className="font-bold text-slate-700 dark:text-white truncate text-sm">
                                             {item.localidade}
                                         </h5>
-                                        <span className="text-lg font-black text-red-600 dark:text-red-400 ml-2">
-                                            {item.eliminados.toLocaleString('pt-BR')}
+                                        <span className={`text-lg font-black ml-2 ${getPendenciaColor(item.pendencia)}`}>
+                                            {item.pendencia.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
                                         </span>
                                     </div>
 
@@ -100,7 +113,7 @@ export const LocalityRanking: React.FC<LocalityRankingProps> = ({ data, maxItems
                                     <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                                         <div
                                             className={`h-full bg-gradient-to-r ${getBarColor(item.rank)} rounded-full transition-all duration-500`}
-                                            style={{ width: `${percentage}%` }}
+                                            style={{ width: `${Math.min(percentage, 100)}%` }}
                                         ></div>
                                     </div>
 
@@ -108,15 +121,15 @@ export const LocalityRanking: React.FC<LocalityRankingProps> = ({ data, maxItems
                                     <div className="flex items-center gap-4 mt-2 text-[10px] text-slate-400">
                                         <span className="flex items-center gap-1">
                                             <span className="material-symbols-outlined text-xs text-blue-500">home</span>
-                                            {item.imoveis.toLocaleString('pt-BR')} imóveis
+                                            {item.informados.toLocaleString('pt-BR')} informados
                                         </span>
                                         <span className="flex items-center gap-1">
-                                            <span className="material-symbols-outlined text-xs text-amber-500">inventory_2</span>
-                                            {item.depositos.toLocaleString('pt-BR')} depósitos
+                                            <span className="material-symbols-outlined text-xs text-amber-500">lock</span>
+                                            {item.fechados.toLocaleString('pt-BR')} fechados
                                         </span>
                                         <span className="flex items-center gap-1">
-                                            <span className="material-symbols-outlined text-xs text-emerald-500">groups</span>
-                                            {item.agentes} agentes
+                                            <span className="material-symbols-outlined text-xs text-emerald-500">refresh</span>
+                                            {item.recuperados.toLocaleString('pt-BR')} recup.
                                         </span>
                                     </div>
                                 </div>

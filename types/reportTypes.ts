@@ -173,6 +173,10 @@ export interface LocalityRankingItem {
     depositos: number;
     imoveis: number;
     agentes: number;
+    fechados: number;
+    recuperados: number;
+    informados: number;
+    pendencia: number;  // Percentual de pendência
     rank: number;
 }
 

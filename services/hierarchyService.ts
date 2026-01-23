@@ -350,5 +350,88 @@ export const HierarchyService = {
             .eq('supervisor_area_id', supervisor.id);
 
         return localidades?.map(l => l.localidade) || [];
+    },
+
+    // ============================================
+    // CONTROLE DE ACESSO - LOCALIDADES PERMITIDAS
+    // ============================================
+
+    /**
+     * Retorna as localidades que um usuário pode acessar baseado em seu role.
+     * - admin/gestor: retorna null (acesso total a todas as localidades)
+     * - supervisor_geral: retorna todas as localidades de todos os seus supervisores de área
+     * - supervisor_area: retorna apenas as localidades atribuídas a ele
+     * - outros: retorna array vazio (sem acesso)
+     */
+    getAccessibleLocalidades: async (profileId: string, role: string): Promise<string[] | null> => {
+        console.log('[HierarchyService] getAccessibleLocalidades called with:', { profileId, role });
+
+        // Admin e Gestor têm acesso total
+        if (role === 'admin' || role === 'gestor') {
+            console.log('[HierarchyService] Full access (admin/gestor)');
+            return null; // null indica acesso total
+        }
+
+        // Supervisor Geral: acesso a todas as localidades dos seus supervisores de área
+        if (role === 'supervisor_geral') {
+            const { data: supervisorGeral } = await supabase
+                .from('supervisores_gerais')
+                .select('id')
+                .eq('profile_id', profileId)
+                .single();
+
+            console.log('[HierarchyService] Supervisor Geral data:', supervisorGeral);
+
+            if (!supervisorGeral) return [];
+
+            // Buscar todos os supervisores de área vinculados a este supervisor geral
+            const { data: supervisoresArea } = await supabase
+                .from('supervisores_area')
+                .select('id')
+                .eq('supervisor_geral_id', supervisorGeral.id);
+
+            console.log('[HierarchyService] Supervisores Area:', supervisoresArea);
+
+            if (!supervisoresArea || supervisoresArea.length === 0) return [];
+
+            // Buscar todas as localidades de todos os supervisores de área
+            const supervisorAreaIds = supervisoresArea.map(sa => sa.id);
+            const { data: localidades } = await supabase
+                .from('localidades_supervisor')
+                .select('localidade')
+                .in('supervisor_area_id', supervisorAreaIds);
+
+            const result = localidades?.map(l => l.localidade) || [];
+            console.log('[HierarchyService] Localidades for supervisor_geral:', result);
+            return result;
+        }
+
+        // Supervisor de Área: acesso apenas às suas localidades
+        if (role === 'supervisor_area') {
+            const { data: supervisor, error: supervisorError } = await supabase
+                .from('supervisores_area')
+                .select('id')
+                .eq('profile_id', profileId)
+                .single();
+
+            console.log('[HierarchyService] Supervisor Area data:', supervisor, 'Error:', supervisorError);
+
+            if (!supervisor) return [];
+
+            const { data: localidades, error: localidadesError } = await supabase
+                .from('localidades_supervisor')
+                .select('localidade')
+                .eq('supervisor_area_id', supervisor.id);
+
+            console.log('[HierarchyService] Localidades:', localidades, 'Error:', localidadesError);
+
+            const result = localidades?.map(l => l.localidade) || [];
+            console.log('[HierarchyService] Localidades for supervisor_area:', result);
+            return result;
+        }
+
+        // Outros roles: sem acesso
+        console.log('[HierarchyService] No access for role:', role);
+        return [];
     }
 };

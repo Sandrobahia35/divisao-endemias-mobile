@@ -4,6 +4,7 @@ import { Report, ReportFiltersExtended } from '../types/reportTypes';
 import { ReportDetail } from '../components/ReportDetail';
 import { ExportModal } from '../components/ExportModal';
 import { ListaDashboard } from '../components/ListaDashboard';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ReportsPageProps {
     onNavigateToForm: () => void;
@@ -11,6 +12,7 @@ interface ReportsPageProps {
 }
 
 export const ReportsPage: React.FC<ReportsPageProps> = ({ onNavigateToForm, onEditReport }) => {
+    const { profile } = useAuth();
     const [reports, setReports] = useState<Report[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
@@ -20,9 +22,16 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({ onNavigateToForm, onEd
     const [selectedReport, setSelectedReport] = useState<Report | undefined>(undefined);
 
     const fetchReports = useCallback(async () => {
+        if (!profile) return;
+
         setLoading(true);
         try {
-            // Se houver filtros, usa a busca avançada, senão busca todos
+            const profileId = profile.id;
+            const role = profile.role || 'user';
+
+            console.log('[ReportsPage] Fetching reports for:', { profileId, role, profileName: profile.full_name });
+
+            // Se houver filtros, usa a busca avançada, senão busca por acesso do usuário
             const hasFilters =
                 (filters.localidades?.length || 0) > 0 ||
                 (filters.semanasEpidemiologicas?.length || 0) > 0 ||
@@ -31,21 +40,28 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({ onNavigateToForm, onEd
             let data: Report[];
             if (hasFilters) {
                 // Mapeia os filtros do componente para o formato esperado pelo serviço
-                data = await ReportService.getReportsByAdvancedFilter({
-                    semanas: filters.semanasEpidemiologicas,
-                    localidades: filters.localidades,
-                    ciclos: filters.ciclos
-                });
+                // Usa o método que respeita a hierarquia do usuário
+                data = await ReportService.getReportsByAdvancedFilterWithAccess(
+                    {
+                        semanas: filters.semanasEpidemiologicas,
+                        localidades: filters.localidades,
+                        ciclos: filters.ciclos
+                    },
+                    profileId,
+                    role
+                );
             } else {
-                data = await ReportService.getAllReports();
+                // Busca relatórios baseado no acesso do usuário na hierarquia
+                data = await ReportService.getReportsByUserAccess(profileId, role);
             }
+            console.log('[ReportsPage] Reports fetched:', data.length);
             setReports(data);
         } catch (error) {
             console.error("Failed to fetch reports", error);
         } finally {
             setLoading(false);
         }
-    }, [filters]);
+    }, [filters, profile]);
 
     useEffect(() => {
         fetchReports();

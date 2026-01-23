@@ -131,9 +131,9 @@ export function useDataConsolidation(reports: Report[]) {
         });
     }, [reports]);
 
-    // Ranking de localidades por eliminados
+    // Ranking de localidades por menor índice de pendência
     const localityRanking = useMemo<LocalityRankingItem[]>(() => {
-        const grouped: Record<string, Omit<LocalityRankingItem, 'rank'>> = {};
+        const grouped: Record<string, Omit<LocalityRankingItem, 'rank' | 'pendencia'>> = {};
 
         reports.forEach(report => {
             const localidade = report.localidade;
@@ -145,13 +145,21 @@ export function useDataConsolidation(reports: Report[]) {
                     eliminados: 0,
                     depositos: 0,
                     imoveis: 0,
-                    agentes: 0
+                    agentes: 0,
+                    fechados: 0,
+                    recuperados: 0,
+                    informados: 0
                 };
             }
 
             const imoveis = data.imoveis;
             grouped[localidade].imoveis += (imoveis.residencias || 0) + (imoveis.comercios || 0) +
                 (imoveis.terrenos || 0) + (imoveis.pontos || 0) + (imoveis.outros || 0);
+
+            // Campos para cálculo de pendência
+            grouped[localidade].fechados += imoveis.fechados || 0;
+            grouped[localidade].recuperados += imoveis.recuperados || 0;
+            grouped[localidade].informados += imoveis.informados || 0;
 
             const depositos = data.depositos;
             grouped[localidade].depositos += (depositos.A1 || 0) + (depositos.A2 || 0) + (depositos.B || 0) +
@@ -162,7 +170,15 @@ export function useDataConsolidation(reports: Report[]) {
         });
 
         return Object.values(grouped)
-            .sort((a, b) => b.eliminados - a.eliminados)
+            .map(item => ({
+                ...item,
+                // Cálculo da pendência: (fechados - recuperados) * 100 / informados
+                pendencia: item.informados > 0
+                    ? Math.round(((item.fechados - item.recuperados) * 100 / item.informados) * 100) / 100
+                    : 0
+            }))
+            // Ordena pela menor pendência (ascending)
+            .sort((a, b) => a.pendencia - b.pendencia)
             .map((item, index) => ({ ...item, rank: index + 1 }));
     }, [reports]);
 

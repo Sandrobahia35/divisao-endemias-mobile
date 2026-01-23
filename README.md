@@ -50,6 +50,7 @@ divisao-endemias-mobile/
 │   └── LoginPage.tsx
 ├── services/             # Lógica de negócio
 │   ├── reportService.ts
+│   ├── hierarchyService.ts
 │   ├── userService.ts
 │   ├── profileService.ts
 │   ├── exportService.ts
@@ -175,12 +176,43 @@ O sistema utiliza **Supabase Auth** com suporte a:
 4. Configure as credenciais OAuth 2.0
 5. Adicione a URL de callback do Supabase
 
-## 🔐 Permissões de Usuário
+## 🔐 Permissões e Hierarquia
 
-| Função | Visualizar | Criar | Editar | Excluir | Admin |
-|--------|------------|-------|--------|---------|-------|
-| Admin/Gestor | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Supervisor | ✅ | ✅ | ✅ | ❌ | ❌ |
+O sistema implementa controle de acesso baseado em **hierarquia organizacional**:
+
+### Estrutura Hierárquica
+
+```
+Admin / Gestor
+    └── Supervisor Geral
+            └── Supervisor de Área
+                    └── Localidades Atribuídas
+```
+
+### Permissões por Função
+
+| Função | Visualizar Relatórios | Criar | Editar | Excluir | Admin |
+|--------|----------------------|-------|--------|---------|-------|
+| **Admin** | ✅ Todos | ✅ | ✅ | ✅ | ✅ |
+| **Gestor** | ✅ Todos | ✅ | ✅ | ✅ | ❌ |
+| **Supervisor Geral** | ✅ Das localidades dos seus supervisores de área | ✅ | ✅ | ❌ | ❌ |
+| **Supervisor de Área** | ✅ Das suas localidades atribuídas | ✅ | ✅ | ❌ | ❌ |
+
+### Serviços de Hierarquia
+
+O sistema utiliza políticas **Row Level Security (RLS)** no Supabase para garantir que:
+
+- Supervisores de área só vejam dados das localidades atribuídas a eles
+- Supervisores gerais vejam dados de todas as localidades dos seus subordinados
+- Admin e gestores tenham acesso completo
+
+### Tabelas de Hierarquia
+
+| Tabela | Descrição |
+|--------|-----------|
+| `supervisores_gerais` | Registro de supervisores gerais e vínculo com profile |
+| `supervisores_area` | Registro de supervisores de área e vínculo com supervisor geral |
+| `localidades_supervisor` | Localidades atribuídas a cada supervisor de área |
 
 ## 📥 Exportação de Dados
 
@@ -210,6 +242,12 @@ npm run test:coverage
 ```
 
 ## 📝 Changelog
+
+### v1.1.0 (Janeiro 2026)
+- [x] Sistema de hierarquia organizacional (Supervisor Geral → Supervisor de Área → Localidades)
+- [x] Controle de acesso baseado em hierarquia nos relatórios
+- [x] Ranking de localidades por menor índice de pendência
+- [x] Políticas RLS para supervisores acessarem suas localidades
 
 ### v1.0.0 (Janeiro 2026)
 - [x] Formulário de registro de atividades (7 etapas)

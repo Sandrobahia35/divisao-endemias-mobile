@@ -193,7 +193,7 @@ export const UsersPage: React.FC<UsersPageProps> = () => {
                             <span className="text-sm text-slate-600 dark:text-slate-400">Desenvolvido por</span>
                             <span className="text-sm font-semibold text-primary">Elissandro Oliveira</span>
                         </div>
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-1">
                             <span className="text-sm text-slate-600 dark:text-slate-400">Organização</span>
                             <span className="text-sm font-semibold text-slate-800 dark:text-white">Divisão de Endemias - Itabuna</span>
                         </div>

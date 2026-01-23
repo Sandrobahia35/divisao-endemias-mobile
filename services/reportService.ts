@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { HierarchyService } from './hierarchyService';
 import { FormData } from '../types';
 import { Report, ReportFilters, ReportsSummary, FilterOptions } from '../types/reportTypes';
 import { LOCALIDADES } from '../constants';
@@ -51,6 +52,126 @@ export const ReportService = {
             return data.map(mapToReportType);
         } catch (error) {
             console.error('Error fetching reports:', error);
+            return [];
+        }
+    },
+
+    /**
+     * Busca relatórios filtrados pelo acesso do usuário baseado na hierarquia.
+     * - admin/gestor: todos os relatórios
+     * - supervisor_geral: relatórios das localidades dos seus supervisores de área
+     * - supervisor_area: relatórios das suas localidades atribuídas
+     */
+    getReportsByUserAccess: async (profileId: string, role: string): Promise<Report[]> => {
+        try {
+            console.log('[ReportService] getReportsByUserAccess called:', { profileId, role });
+
+            // Obter localidades permitidas para o usuário
+            const accessibleLocalidades = await HierarchyService.getAccessibleLocalidades(profileId, role);
+
+            console.log('[ReportService] Accessible localidades:', accessibleLocalidades);
+
+            // null significa acesso total (admin/gestor)
+            if (accessibleLocalidades === null) {
+                console.log('[ReportService] Full access - fetching all reports');
+                const { data, error } = await supabase
+                    .from('reports')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                console.log('[ReportService] Fetched reports:', data?.length);
+                return data.map(mapToReportType);
+            }
+
+            // Array vazio significa sem acesso
+            if (accessibleLocalidades.length === 0) {
+                console.log('[ReportService] No accessible localidades - returning empty');
+                return [];
+            }
+
+            // Filtrar por localidades permitidas
+            console.log('[ReportService] Filtering by localidades:', accessibleLocalidades);
+            const { data, error } = await supabase
+                .from('reports')
+                .select('*')
+                .in('localidade', accessibleLocalidades)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            console.log('[ReportService] Fetched filtered reports:', data?.length);
+            return data.map(mapToReportType);
+        } catch (error) {
+            console.error('Error fetching reports by user access:', error);
+            return [];
+        }
+    },
+
+    /**
+     * Busca relatórios com filtros avançados respeitando o acesso do usuário.
+     */
+    getReportsByAdvancedFilterWithAccess: async (
+        filters: any,
+        profileId: string,
+        role: string
+    ): Promise<Report[]> => {
+        try {
+            const { semanasEpidemiologicas, semanas, localidades, ciclos } = filters;
+            const targetSemanas = semanasEpidemiologicas || semanas || [];
+
+            // Obter localidades permitidas para o usuário
+            const accessibleLocalidades = await HierarchyService.getAccessibleLocalidades(profileId, role);
+
+            // Se não tem acesso a nenhuma localidade, retorna vazio
+            if (accessibleLocalidades !== null && accessibleLocalidades.length === 0) {
+                return [];
+            }
+
+            let query = supabase.from('reports').select('*');
+
+            // Aplicar filtro de semanas
+            if (targetSemanas && targetSemanas.length > 0) {
+                query = query.in('semana_epidemiologica', targetSemanas);
+            }
+
+            // Aplicar filtro de ciclos
+            if (ciclos && ciclos.length > 0) {
+                query = query.in('ciclo', ciclos);
+            }
+
+            // Aplicar filtro de localidades
+            // Combina as localidades do filtro com as localidades permitidas
+            if (accessibleLocalidades !== null) {
+                // Supervisor: intersecção entre filtro e localidades permitidas
+                if (localidades && localidades.length > 0) {
+                    // Filtra apenas as localidades que estão tanto no filtro quanto nas permitidas
+                    const allowedFromFilter = localidades.filter((loc: string) =>
+                        accessibleLocalidades.includes(loc)
+                    );
+                    if (allowedFromFilter.length === 0) {
+                        return []; // Nenhuma localidade do filtro está permitida
+                    }
+                    query = query.in('localidade', allowedFromFilter);
+                } else {
+                    // Sem filtro de localidade, usa todas as permitidas
+                    query = query.in('localidade', accessibleLocalidades);
+                }
+            } else {
+                // Admin/Gestor: aplica apenas o filtro de localidade se existir
+                if (localidades && localidades.length > 0) {
+                    query = query.in('localidade', localidades);
+                }
+            }
+
+            const { data, error } = await query.order('created_at', { ascending: false });
+
+            if (error) {
+                console.error(error);
+                return [];
+            }
+            return data.map(mapToReportType);
+        } catch (error) {
+            console.error('Error fetching reports by advanced filter with access:', error);
             return [];
         }
     },
